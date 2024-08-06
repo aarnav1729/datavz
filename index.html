@@ -1,265 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualization with Chart.js</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>p4: operational data insights</title>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
     <style>
-        body {
-            font-family: 'IBM Plex Sans', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background-color: #f4f4f9;
-            color: #333;
-        }
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap");
 
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 2rem;
-            font-weight: 700;
-        }
+      body {
+        font-family: "IBM Plex Sans", sans-serif;
+        padding: 0;
+        box-sizing: border-box;
+        background-color: #f4f4f9;
+        color: #333;
+        margin-right: 2px;
+        margin-left: 2px;
+        line-height: 1.6;
+      }
 
-        .chart-container {
-            width: 90%;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
+      h1 {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
 
-        h3 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-        }
+      .chart-container {
+        width: 90%;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin-bottom: 30px;
+      }
 
-        p {
-            font-size: 1rem;
-            color: #666;
-        }
+      h3 {
+        text-align: center;
+        font-size: 1.75rem;
+        margin-bottom: 10px;
+        color: #444;
+      }
 
-        canvas {
-            max-width: 100%;
-            height: auto;
-        }
+      p {
+        text-align: center;
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      canvas {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+
+      .tab-button {
+        background-color: #eee;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
+
+      .tab-button:hover {
+        background-color: #ddd;
+      }
+
+      .chart {
+        display: none;
+      }
+
+      .chart.active {
+        display: block;
+      }
+
+      .tab-button.active {
+        background-color: #ccc;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
-    <h1>Operational Data Insights</h1>
+  </head>
+
+  <body>
+    <h1>p4: operational data insights</h1>
 
     <div class="chart-container">
-        <h3>Inspection Performance by Shift</h3>
-        <p>This bar graph illustrates the inspection performance across different shifts, highlighting efficiency and bottlenecks.</p>
-        <canvas id="barChart"></canvas>
-    </div>
-    
-    <div class="chart-container">
-        <h3>Inspection Result Breakdown</h3>
-        <p>The pie chart reveals the proportion of OK, M Grade, and L Grade results, providing a snapshot of quality distribution.</p>
-        <canvas id="pieChart"></canvas>
-    </div>
-    
-    <div class="chart-container">
-        <h3>Inspection Trends Over Time</h3>
-        <p>Observe the trend of total inspections across shifts over time to identify patterns and variations.</p>
-        <canvas id="lineGraph"></canvas>
+      <h3>Inspection Result Breakdown</h3>
+      <p>
+        The pie chart reveals the proportion of OK, M Grade, and L Grade
+        results, providing a snapshot of quality distribution.
+      </p>
+      <canvas id="pieChart"></canvas>
     </div>
 
     <div class="chart-container">
-        <h3>Shift Performance Comparison</h3>
-        <p>The radar chart compares performance across shifts, helping to pinpoint strengths and areas for improvement.</p>
-        <canvas id="radarChart"></canvas>
+      <h3>Inspection Performance by Shift</h3>
+      <p>
+        Use the tabs below to view inspection performance across different
+        shifts, highlighting efficiency and bottlenecks.
+      </p>
+      <div class="tabs">
+        <button class="tab-button" onclick="showChart('A')">A Shift</button>
+        <button class="tab-button" onclick="showChart('B')">B Shift</button>
+        <button class="tab-button" onclick="showChart('C')">C Shift</button>
+      </div>
+      <canvas id="barChartA" class="chart active"></canvas>
+      <canvas id="barChartB" class="chart"></canvas>
+      <canvas id="barChartC" class="chart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3>Inspection Trends Over Time</h3>
+      <p>
+        Observe the trend of total inspections across shifts over time to
+        identify patterns and variations.
+      </p>
+      <canvas id="lineGraph"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3>Shift Performance Comparison</h3>
+      <p>
+        The radar chart compares performance across shifts, helping to pinpoint
+        strengths and areas for improvement.
+      </p>
+      <canvas id="radarChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3>Heat Map of Inspections</h3>
+      <p>
+        This heat map highlights the inspection intensity over different
+        categories and shifts.
+      </p>
+      <canvas id="heatMap"></canvas>
     </div>
 
     <script>
-        // Load and parse the CSV file
-        Papa.parse("sample.csv", {
-            download: true,
-            header: true,
-            complete: function(results) {
-                const data = results.data;
+      Papa.parse("sample.csv", {
+        download: true,
+        header: true,
+        complete: function (results) {
+          const data = results.data;
 
-                const categories = data.map(d => d.Category);
-                const aShift = data.map(d => parseFloat(d['A-Shift']));
-                const bShift = data.map(d => parseFloat(d['B-Shift']));
-                const cShift = data.map(d => parseFloat(d['C-Shift']));
-                const totalShift = data.map(d => parseFloat(d['A+B+C Shift']));
+          const categories = data.map((d) => d.Category);
+          const aShift = data.map((d) => parseFloat(d["A-Shift"]));
+          const bShift = data.map((d) => parseFloat(d["B-Shift"]));
+          const cShift = data.map((d) => parseFloat(d["C-Shift"]));
+          const totalShift = data.map((d) => parseFloat(d["A+B+C Shift"]));
 
-                // Bar Chart
-                const barChartCtx = document.getElementById('barChart').getContext('2d');
-                const barChart = new Chart(barChartCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: categories,
-                        datasets: [
-                            {
-                                label: 'A Shift',
-                                data: aShift,
-                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'B Shift',
-                                data: bShift,
-                                backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                                borderColor: 'rgba(153, 102, 255, 1)',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'C Shift',
-                                data: cShift,
-                                backgroundColor: 'rgba(255, 159, 64, 0.5)',
-                                borderColor: 'rgba(255, 159, 64, 1)',
-                                borderWidth: 1
-                            }
-                        ]
+          const barChartACtx = document
+            .getElementById("barChartA")
+            .getContext("2d");
+          const barChartBCtx = document
+            .getElementById("barChartB")
+            .getContext("2d");
+          const barChartCCtx = document
+            .getElementById("barChartC")
+            .getContext("2d");
+
+          const barChartA = new Chart(barChartACtx, {
+            type: "bar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "A Shift",
+                  data: aShift,
+                  backgroundColor: "rgba(75, 192, 192, 0.5)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Inspection Count",
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      return `${context.dataset.label}: ${context.raw}`;
                     },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Inspection Count'
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.dataset.label}: ${context.raw}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
+                  },
+                },
+              },
+            },
+          });
 
-                // Pie Chart
-                const pieChartCtx = document.getElementById('pieChart').getContext('2d');
-                const pieChart = new Chart(pieChartCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: categories.slice(1, 4),
-                        datasets: [{
-                            data: totalShift.slice(1, 4),
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.5)',
-                                'rgba(54, 162, 235, 0.5)',
-                                'rgba(255, 206, 86, 0.5)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
+          const barChartB = new Chart(barChartBCtx, {
+            type: "bar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "B Shift",
+                  data: bShift,
+                  backgroundColor: "rgba(153, 102, 255, 0.5)",
+                  borderColor: "rgba(153, 102, 255, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Inspection Count",
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      return `${context.dataset.label}: ${context.raw}`;
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw;
-                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(2);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
+                  },
+                },
+              },
+            },
+          });
 
-                // Line Graph
-                const lineGraphCtx = document.getElementById('lineGraph').getContext('2d');
-                const lineGraph = new Chart(lineGraphCtx, {
-                    type: 'line',
-                    data: {
-                        labels: categories,
-                        datasets: [{
-                            label: 'A+B+C Shift Total',
-                            data: totalShift,
-                            fill: true,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            tension: 0.4
-                        }]
+          const barChartC = new Chart(barChartCCtx, {
+            type: "bar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "C Shift",
+                  data: cShift,
+                  backgroundColor: "rgba(255, 159, 64, 0.5)",
+                  borderColor: "rgba(255, 159, 64, 1)",
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Inspection Count",
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      return `${context.dataset.label}: ${context.raw}`;
                     },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Total Inspections'
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Total: ${context.raw}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
+                  },
+                },
+              },
+            },
+          });
 
-                // Radar Chart
-                const radarChartCtx = document.getElementById('radarChart').getContext('2d');
-                const radarChart = new Chart(radarChartCtx, {
-                    type: 'radar',
-                    data: {
-                        labels: categories,
-                        datasets: [
-                            {
-                                label: 'A Shift',
-                                data: aShift,
-                                fill: true,
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)'
-                            },
-                            {
-                                label: 'B Shift',
-                                data: bShift,
-                                fill: true,
-                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                                borderColor: 'rgba(153, 102, 255, 1)'
-                            },
-                            {
-                                label: 'C Shift',
-                                data: cShift,
-                                fill: true,
-                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                                borderColor: 'rgba(255, 159, 64, 1)'
-                            }
-                        ]
+          const heatMapCtx = document
+            .getElementById("heatMap")
+            .getContext("2d");
+          const heatMap = new Chart(heatMapCtx, {
+            type: "bar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "A Shift",
+                  data: aShift,
+                  backgroundColor: aShift.map(
+                    (value) =>
+                      `rgba(255, 99, 132, ${value / Math.max(...aShift)})`
+                  ),
+                },
+                {
+                  label: "B Shift",
+                  data: bShift,
+                  backgroundColor: bShift.map(
+                    (value) =>
+                      `rgba(54, 162, 235, ${value / Math.max(...bShift)})`
+                  ),
+                },
+                {
+                  label: "C Shift",
+                  data: cShift,
+                  backgroundColor: cShift.map(
+                    (value) =>
+                      `rgba(255, 206, 86, ${value / Math.max(...cShift)})`
+                  ),
+                },
+              ],
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  boxWidth: 20,
+                  padding: 20,
+                  font: {
+                    size: 12,
+                  },
+                },
+                position: "bottom",
+                align: "start",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `${context.dataset.label}: ${context.raw}`;
+                  },
+                },
+              },
+            },
+            options: {
+              responsive: true,
+              scales: {
+                x: {
+                  stacked: true,
+                  ticks: {
+                    maxRotation: 90,
+                    minRotation: 90,
+                  },
+                },
+                y: {
+                  stacked: true,
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Inspection Intensity",
+                  },
+                },
+              },
+            },
+          });
+
+          const pieChartCtx = document
+            .getElementById("pieChart")
+            .getContext("2d");
+          const pieChart = new Chart(pieChartCtx, {
+            type: "pie",
+            data: {
+              labels: categories.slice(1, 4),
+              datasets: [
+                {
+                  data: totalShift.slice(1, 4),
+                  backgroundColor: [
+                    "rgba(0, 204, 0, 0.5)",
+                    "rgba(255, 0, 0, 0.5)",
+                    "rgba(255, 255, 0, 0.5)",
+                  ],
+                  borderColor: [
+                    "rgba(0, 0, 0, 1)",
+                    "rgba(0, 0, 0, 1)",
+                    "rgba(0, 0, 0, 1)",
+                  ],
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      const label = context.label || "";
+                      const value = context.raw;
+                      const total = context.chart.data.datasets[0].data.reduce(
+                        (a, b) => a + b,
+                        0
+                      );
+                      const percentage = ((value / total) * 100).toFixed(2);
+                      return `${label}: ${value} (${percentage}%)`;
                     },
-                    options: {
-                        elements: {
-                            line: {
-                                borderWidth: 3
-                            }
-                        }
-                    }
-                });
-            }
-        });
+                  },
+                },
+              },
+            },
+          });
+
+          const lineGraphCtx = document
+            .getElementById("lineGraph")
+            .getContext("2d");
+          const lineGraph = new Chart(lineGraphCtx, {
+            type: "line",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "A+B+C Shift Total",
+                  data: totalShift,
+                  fill: true,
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                  tension: 0.4,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Total Inspections",
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      return `Total: ${context.raw}`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const radarChartCtx = document
+            .getElementById("radarChart")
+            .getContext("2d");
+          const radarChart = new Chart(radarChartCtx, {
+            type: "radar",
+            data: {
+              labels: categories,
+              datasets: [
+                {
+                  label: "A Shift",
+                  data: aShift,
+                  fill: true,
+                  backgroundColor: "rgba(75, 192, 192, 0.2)",
+                  borderColor: "rgba(75, 192, 192, 1)",
+                },
+                {
+                  label: "B Shift",
+                  data: bShift,
+                  fill: true,
+                  backgroundColor: "rgba(153, 102, 255, 0.2)",
+                  borderColor: "rgba(153, 102, 255, 1)",
+                },
+                {
+                  label: "C Shift",
+                  data: cShift,
+                  fill: true,
+                  backgroundColor: "rgba(255, 159, 64, 0.2)",
+                  borderColor: "rgba(255, 159, 64, 1)",
+                },
+              ],
+            },
+            options: {
+              elements: {
+                line: {
+                  borderWidth: 3,
+                },
+              },
+            },
+          });
+        },
+      });
     </script>
-</body>
+
+    <script>
+      function showChart(shift) {
+        // Hide all charts
+        document.querySelectorAll(".chart").forEach((canvas) => {
+          canvas.style.display = "none";
+        });
+
+        // Show the selected chart
+        document.getElementById(`barChart${shift}`).style.display = "block";
+
+        // Remove active class from all buttons
+        document.querySelectorAll(".tab-button").forEach((button) => {
+          button.classList.remove("active");
+        });
+
+        // Add active class to the selected button
+        document
+          .querySelector(`button[onclick="showChart('${shift}')"]`)
+          .classList.add("active");
+      }
+
+      // Ensure A Shift chart is visible on load
+      showChart("A");
+    </script>
+  </body>
 </html>
