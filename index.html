@@ -8,38 +8,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'IBM Plex Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4f4f9;
+            color: #333;
         }
-        .chart-container {
-            width: 50%;
-            margin: 20px auto;
+
+        h1 {
             text-align: center;
+            margin-top: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <h1>Data Visualization</h1>
+    <h1>Operational Data Insights</h1>
+
     <div class="chart-container">
-        <h3>Bar Graph: Inspection Counts by Shift</h3>
-        <p>This bar graph compares the total inspections, OK counts, and rejection counts across different shifts.</p>
+        <h3>Inspection Performance by Shift</h3>
+        <p>This bar graph illustrates the inspection performance across different shifts, highlighting efficiency and bottlenecks.</p>
         <canvas id="barChart"></canvas>
     </div>
     
     <div class="chart-container">
-        <h3>Pie Chart: Distribution of Inspection Results</h3>
-        <p>This pie chart shows the distribution of OK, M Grade, and L Grade inspection results.</p>
+        <h3>Inspection Result Breakdown</h3>
+        <p>The pie chart reveals the proportion of OK, M Grade, and L Grade results, providing a snapshot of quality distribution.</p>
         <canvas id="pieChart"></canvas>
     </div>
     
     <div class="chart-container">
-        <h3>Line Graph: Total Counts Over Sequence</h3>
-        <p>The line graph depicts the total inspection counts (A+B+C shifts) across different categories.</p>
+        <h3>Inspection Trends Over Time</h3>
+        <p>Observe the trend of total inspections across shifts over time to identify patterns and variations.</p>
         <canvas id="lineGraph"></canvas>
     </div>
 
     <div class="chart-container">
-        <h3>Radar Chart: Comparative Analysis of Shifts</h3>
-        <p>This radar chart provides a comparative analysis of the performance across different shifts.</p>
+        <h3>Shift Performance Comparison</h3>
+        <p>The radar chart compares performance across shifts, helping to pinpoint strengths and areas for improvement.</p>
         <canvas id="radarChart"></canvas>
     </div>
 
@@ -67,30 +100,44 @@
                             {
                                 label: 'A Shift',
                                 data: aShift,
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 borderWidth: 1
                             },
                             {
                                 label: 'B Shift',
                                 data: bShift,
-                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.5)',
                                 borderColor: 'rgba(153, 102, 255, 1)',
                                 borderWidth: 1
                             },
                             {
                                 label: 'C Shift',
                                 data: cShift,
-                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                backgroundColor: 'rgba(255, 159, 64, 0.5)',
                                 borderColor: 'rgba(255, 159, 64, 1)',
                                 borderWidth: 1
                             }
                         ]
                     },
                     options: {
+                        responsive: true,
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Inspection Count'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
                             }
                         }
                     }
@@ -105,9 +152,9 @@
                         datasets: [{
                             data: totalShift.slice(1, 4),
                             backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)'
+                                'rgba(255, 99, 132, 0.5)',
+                                'rgba(54, 162, 235, 0.5)',
+                                'rgba(255, 206, 86, 0.5)'
                             ],
                             borderColor: [
                                 'rgba(255, 99, 132, 1)',
@@ -116,6 +163,22 @@
                             ],
                             borderWidth: 1
                         }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw;
+                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(2);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
 
@@ -128,15 +191,30 @@
                         datasets: [{
                             label: 'A+B+C Shift Total',
                             data: totalShift,
-                            fill: false,
+                            fill: true,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(75, 192, 192, 1)',
-                            tension: 0.1
+                            tension: 0.4
                         }]
                     },
                     options: {
+                        responsive: true,
                         scales: {
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Total Inspections'
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Total: ${context.raw}`;
+                                    }
+                                }
                             }
                         }
                     }
