@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization with Chart.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .chart-container {
+            width: 50%;
+            margin: 20px auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Visualization</h1>
+    <div class="chart-container">
+        <h3>Bar Graph: Inspection Counts by Shift</h3>
+        <p>This bar graph compares the total inspections, OK counts, and rejection counts across different shifts.</p>
+        <canvas id="barChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Pie Chart: Distribution of Inspection Results</h3>
+        <p>This pie chart shows the distribution of OK, M Grade, and L Grade inspection results.</p>
+        <canvas id="pieChart"></canvas>
+    </div>
+    
+    <div class="chart-container">
+        <h3>Line Graph: Total Counts Over Sequence</h3>
+        <p>The line graph depicts the total inspection counts (A+B+C shifts) across different categories.</p>
+        <canvas id="lineGraph"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h3>Radar Chart: Comparative Analysis of Shifts</h3>
+        <p>This radar chart provides a comparative analysis of the performance across different shifts.</p>
+        <canvas id="radarChart"></canvas>
+    </div>
+
+    <script>
+        // Load and parse the CSV file
+        Papa.parse("sample.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
+
+                const categories = data.map(d => d.Category);
+                const aShift = data.map(d => parseFloat(d['A-Shift']));
+                const bShift = data.map(d => parseFloat(d['B-Shift']));
+                const cShift = data.map(d => parseFloat(d['C-Shift']));
+                const totalShift = data.map(d => parseFloat(d['A+B+C Shift']));
+
+                // Bar Chart
+                const barChartCtx = document.getElementById('barChart').getContext('2d');
+                const barChart = new Chart(barChartCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: categories,
+                        datasets: [
+                            {
+                                label: 'A Shift',
+                                data: aShift,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'B Shift',
+                                data: bShift,
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'C Shift',
+                                data: cShift,
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Pie Chart
+                const pieChartCtx = document.getElementById('pieChart').getContext('2d');
+                const pieChart = new Chart(pieChartCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: categories.slice(1, 4),
+                        datasets: [{
+                            data: totalShift.slice(1, 4),
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    }
+                });
+
+                // Line Graph
+                const lineGraphCtx = document.getElementById('lineGraph').getContext('2d');
+                const lineGraph = new Chart(lineGraphCtx, {
+                    type: 'line',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            label: 'A+B+C Shift Total',
+                            data: totalShift,
+                            fill: false,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Radar Chart
+                const radarChartCtx = document.getElementById('radarChart').getContext('2d');
+                const radarChart = new Chart(radarChartCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: categories,
+                        datasets: [
+                            {
+                                label: 'A Shift',
+                                data: aShift,
+                                fill: true,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)'
+                            },
+                            {
+                                label: 'B Shift',
+                                data: bShift,
+                                fill: true,
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                borderColor: 'rgba(153, 102, 255, 1)'
+                            },
+                            {
+                                label: 'C Shift',
+                                data: cShift,
+                                fill: true,
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                borderColor: 'rgba(255, 159, 64, 1)'
+                            }
+                        ]
+                    },
+                    options: {
+                        elements: {
+                            line: {
+                                borderWidth: 3
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
